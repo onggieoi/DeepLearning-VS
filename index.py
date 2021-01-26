@@ -1,5 +1,8 @@
 import cv2
 import numpy as np
+import sys
+
+np.set_printoptions(threshold=sys.maxsize)
 
 
 def make_points(image, line):
@@ -75,8 +78,7 @@ cropped_canny = region_of_interest(lane_canny)
 # averaged_lines = average_slope_intercept(image, lines)
 # line_image = display_lines(lane_image, averaged_lines)
 # combo_image = cv2.addWeighted(lane_image, 0.8, line_image, 1, 0)
-
-cv2.imshow('image', cropped_canny)
+cv2.imshow('image', lane_canny)
 cv2.waitKey(0)
 
 #
