@@ -1,6 +1,6 @@
 # Handling Files, Cameras, and GUIs
 
-## Basic I/O scripts
+# Basic I/O scripts
 Most CV applications need to get images as input. Most also produce images as output. An interactive 
 CV application might require a camera as an input source and a window as an output destination. However, 
 other possible sources and destinations include image files, video files, and raw bytes.
@@ -101,3 +101,78 @@ until it reaches the end of its video file. Each frame is an image in a BGR form
 
 Conversely, an image may be passed to the `write` method of the `VideoWriter` class,
 which appends the image to a file in `VideoWriter`. 
+
+The arguments to the constructor of the VideoWriter class deserve special attention. A
+video's filename must be specified. Any preexisting file with this name is overwritten. A
+video codec must also be specified. The available codecs may vary from system to system.
+- 0: This option is an uncompressed raw video file. The file extension should be .avi.
+- cv2.VideoWriter_fourcc('I','4','2','0'): This option is an
+uncompressed YUV encoding, 4:2:0 chroma subsampled. This encoding is widely
+compatible but produces large files. The file extension should be .avi.
+- cv2.VideoWriter_fourcc('P','I','M','1'): This option is MPEG-1. The
+file extension should be .avi.
+- cv2.VideoWriter_fourcc('X','V','I','D'): This option is a relatively old
+MPEG-4 encoding. It is a good option if you want to limit the size of the resulting
+video. The file extension should be .avi.
+- cv2.VideoWriter_fourcc('M','P','4','V'): This option is another
+relatively old MPEG-4 encoding. It is a good option if you want to limit the size
+of the resulting video. The file extension should be .mp4.
+- cv2.VideoWriter_fourcc('X','2','6','4'): This option is a relatively
+new MPEG-4 encoding. It may be the best option if you want to limit the size of
+the resulting video. The file extension should be .mp4.
+- cv2.VideoWriter_fourcc('T','H','E','O'): This option is Ogg Vorbis.
+The file extension should be .ogv.
+- cv2.VideoWriter_fourcc('F','L','V','1'): This option is a Flash video.
+The file extension should be .flv.
+
+## Capturing camera frames
+A stream of camera frames is represented by a VideoCapture object too. Construct a VideoCapture object 
+by passing the camera's device index instead of a video's filename
+
+Unfortunately, in most cases, the get method of VideoCapture does not return an
+accurate value for the camera's frame rate; it typically returns 0
+> "Value 0 is returned when querying a property that is not supported by the backend used
+by the VideoCapture instance.
+
+VideoCapture -> API Backend -> Operating System -> Device Driver -> Device Hardware
+
+To avoid trying to retrieve frames from a VideoCapture object that was not opened correctly, you may 
+want to first call the VideoCapture.isOpened method, which returns a Boolean.
+
+The read method is inappropriate when we need to synchronize either a set of cameras or a
+multihead camera such as a stereo camera. Then, we use the grab and retrieve methods
+instead.
+
+## Displaying an image in a window
+This can be done with the `imshow` function. in OpenCV, the window is drawn (or re-drawn) only when
+ call another function, `waitKey`. The latter function pumps the window's event queue (allowing 
+various events such as drawing to be handled), and it returns the keycode of any key that the user 
+may have typed within a specified timeout. To some extent, this rudimentary design simplifies
+the task of developing demos that use video or webcam input; at least the developer has
+manual control over the capture and display of new frames.
+
+## Displaying camera frames in a window
+OpenCV allows named windows to be created, redrawn, and destroyed using the
+`namedWindow`, `imshow`, and `destroyWindow` functions. Also, any window may capture
+keyboard input via the `waitKey` function and mouse input via the
+`setMouseCallback` function.
+
+The mouse callback passed to `setMouseCallback` should take five arguments
+- cv2.EVENT_MOUSEMOVE: This event refers to mouse movement.
+- cv2.EVENT_LBUTTONDOWN: This event refers to the left button going down when it is pressed.
+- cv2.EVENT_RBUTTONDOWN: This event refers to the right button going down when it is pressed.
+- cv2.EVENT_MBUTTONDOWN: This event refers to the middle button going down when it is pressed.
+- cv2.EVENT_LBUTTONUP: This event refers to the left button coming back up when it is released.
+- cv2.EVENT_RBUTTONUP: This event refers to the right button coming back up when it is released.
+- cv2.EVENT_MBUTTONUP: This event refers to the middle button coming back up when it is released.
+- cv2.EVENT_LBUTTONDBLCLK: This event refers to the left button being doubleclicked.
+- cv2.EVENT_RBUTTONDBLCLK: This event refers to the right button being doubleclicked.
+- cv2.EVENT_MBUTTONDBLCLK: This event refers to the middle button being double-clicked.
+
+The mouse callback's flags argument may be some bitwise combination of the following events:
+- cv2.EVENT_FLAG_LBUTTON: This event refers to the left button being pressed.
+- cv2.EVENT_FLAG_RBUTTON: This event refers to the right button being pressed.
+- cv2.EVENT_FLAG_MBUTTON: This event refers to the middle button being pressed.
+- cv2.EVENT_FLAG_CTRLKEY: This event refers to the Ctrl key being pressed.
+- cv2.EVENT_FLAG_SHIFTKEY: This event refers to the Shift key being pressed.
+- cv2.EVENT_FLAG_ALTKEY: This event refers to the Alt key being pressed.
