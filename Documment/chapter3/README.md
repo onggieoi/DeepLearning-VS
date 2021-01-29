@@ -85,3 +85,85 @@ step toward other operations. These operations are, namely, computing bounding
 polygons, approximating shapes, and generally calculating regions of interest (ROIs).
 ROIs considerably simplify interaction with image data because a rectangular region in
 NumPy is easily defined with an array slice.
+
+## Bounding box, minimum area rectangle, and minimum enclosing circle
+Finding the contours of a square is a simple task; irregular, skewed, and rotated shapes
+bring out the full potential of OpenCV's `cv2.findContours` function.
+
+In a real-life application, we would be most interested in determining the bounding box of
+the subject, its minimum enclosing rectangle, and its enclosing circle. The
+`cv2.findContours` function, in conjunction with a few other OpenCV utilities, makes this
+very easy to accomplish.
+
+## Convex contours and the Douglas-Peucker algorithm
+When working with contours, we may encounter subjects with diverse shapes, including
+convex ones. A convex shape is one where there are no two points within this shape whose
+connecting line goes outside the perimeter of the shape itself.
+
+The first facility that OpenCV offers to calculate the approximate bounding polygon of a
+shape is cv2.approxPolyDP. This function takes three parameters:
+- A contour.
+- An epsilon value representing the maximum discrepancy between the original
+contour and the approximated polygon (the lower the value, the closer the
+approximated value will be to the original contour).
+- A Boolean flag. If it is True, it signifies that the polygon is closed.
+
+The epsilon value is of vital importance to obtain a useful contour.  Epsilon is the maximum difference 
+between the approximated polygon's perimeter and the original contour's perimeter. The smaller this 
+difference is, the more the approximated polygon will be similar to the original contour.
+
+A polygon is a set of straight lines, and many computer vision tasks become simpler if we can define 
+polygons so that they delimit regions for further manipulation and processing.
+
+OpenCV also offers a `cv2.convexHull` function for obtaining processed contour
+information for convex shapes
+
+# Detecting lines, circles, and other shapes
+Detecting edges and finding contours are not only common and important tasks in their
+own right; they also form the basis of other complex operations. Line and shape detection
+walk hand-in-hand with edge and contour detection, so let's examine how OpenCV
+implements these.
+
+The theory behind line and shape detection has its foundation in a technique called the
+Hough transform, invented by Richard Duda and Peter Hart, who extended (generalized)
+the work that was done by Paul Hough in the early 1960s. Let's take a look at OpenCV's
+API for Hough transforms.
+
+## Detecting lines
+We can do this with either the `HoughLines` function or the `HoughLinesP` function. The former 
+ uses the standard Hough transform, while the latter uses the probabilistic Hough transform 
+ (hence the P in the name). The probabilistic version is so-called because it only analyzes 
+ a subset of the image's points and estimates the probability that these points all belong to 
+ the same line. This implementation is an optimized version of the standard Hough transform;
+ it is less computationally intensive and executes faster. HoughLinesP is implemented so that 
+ it returns the two endpoints of each detected line segment, whereas HoughLines is implemented 
+ so that it returns a representation of each line as a single point and an angle, without 
+ information about endpoints.
+
+Note that the HoughLines function takes a single channel binary image, which is
+processed through the Canny edge detection filter. Canny is not a strict requirement, but an
+image that has been denoised and only represents edges is the ideal source for a Hough
+transform
+
+The parameters of HoughLinesP are as follows:
+- The image.
+- The resolution or step size to use when searching for lines. rho is the positional
+step size in pixels, while `theta` is the rotational step size in radians. For example,
+if we specify `rho=1` and `theta=np.pi/180.0`, we search for lines that are
+separated by as little as 1 pixel and 1 degree.
+- The `threshold`, which represents the threshold below which a line is discarded.
+The Hough transform works with a system of bins and votes, with each bin
+representing a line, so if a candidate line has at least the `threshold` number of
+votes, it is retained; otherwise, it is discarded.
+- `minLineLength` and `maxLineGap`, which we mentioned previously.
+
+## Detecting circles
+`HoughCircles`. It works in a very similar fashion to HoughLines, but where minLineLength 
+and maxLineGap were the parameters to be used to discard or retain lines, HoughCircles has 
+a minimum distance between a circle's centers, as well as minimum and maximum values for 
+a circle's radius.
+
+## Detecting other shapes
+ `approxPolyDP`. This function allows for the approximation of polygons, so if your
+image contains polygons, they will be accurately detected through the combined use
+of `cv2.findContours` and `cv2.approxPolyDP`.
